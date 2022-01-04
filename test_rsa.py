@@ -1,90 +1,161 @@
+#!/usr/bin/env python3
+
 import unittest
 import rsa
+import examples
+import random
+import sympy
+
+
+class TestGetRandomPrime(unittest.TestCase):
+    def test_random_prime(self):
+        """
+        Test ob zurückgegebene Primzahl eine Primzahl ist.
+        """
+
+        want = True
+        get = sympy.isprime(rsa.get_random_prime(128))
+
+        self.assertEqual(want, get)
 
 
 class TestEuclid(unittest.TestCase):
-    def test_prime(self):
-        self.assertEqual(rsa.euclid(89, 3), 1)
+    def test_coprime(self):
+        """
+        Testen ob Zahl a teilerfremd zu Zahl b ist.
+        """
+        want = 1
+        get = rsa.euclid(89, 3)
+        self.assertEqual(want, get)
 
-    def test_not_prime(self):
-        self.assertEqual(rsa.euclid(24, 8), 8)
-        self.assertEqual(rsa.euclid(90, 25), 5)
-        self.assertEqual(rsa.euclid(-65, 89), 1)
-
-    def test_special_cases(self):
-        self.assertEqual(rsa.euclid(1, 1), 1)
-        self.assertEqual(rsa.euclid(0, 1), 1)
-        self.assertEqual(rsa.euclid(1, 0), 1)
+    def test_not_coprime(self):
+        """
+        Testen ob Zahl a nicht teilerfremd zu Zahl b ist.
+        """
+        want = 5
+        get = rsa.euclid(895, 85)
+        self.assertEqual(want, get)
 
 
 class TestExtendedEuclid(unittest.TestCase):
-    def test_prime(self):
-        self.assertEqual(rsa.extended_euclid(15, 71), (1, 19, -4))
+    def test_coprime(self):
+        """ """
+        want = (1, -29, 5)
+        get = rsa.extended_euclid(16, 93)
 
-    def test_not_prime(self):
-        self.assertEqual(rsa.extended_euclid(65, 100), (5, -3, 2))
-        self.assertEqual(rsa.extended_euclid(-85, 45), (5, 1, 2))
-
-    def test_special_cases(self):
-        self.assertEqual(rsa.extended_euclid(1, 1), (1, 0, 1))
-        self.assertEqual(rsa.extended_euclid(1, 0), (1, 1, 0))
-        self.assertEqual(rsa.extended_euclid(0, 1), (1, 0, 1))
+        self.assertEqual(want, get)
 
 
 class TestModulareInverse(unittest.TestCase):
     def test_prime(self):
-        self.assertEqual(rsa.modular_inverse(89, 65), 19)
+        """ """
+        want = 64
+        get = rsa.modular_inverse(16, 93)
 
-    def test_not_prime(self):
-        self.assertEqual(rsa.modular_inverse(45, 85), 2)
+        self.assertEqual(want, get)
 
 
 class TestFermatNumbers(unittest.TestCase):
     def test_fermat_number(self):
-        self.assertEqual(rsa.fermat_numbers(4), 3)
-        self.assertEqual(rsa.fermat_numbers(12), 5)
-        self.assertEqual(rsa.fermat_numbers(45), 17)
-        self.assertEqual(rsa.fermat_numbers(567454560), 257)
+        """"""
+
+        # (1) Fermat Zahl
+        want = 3
+        get = rsa.fermat_numbers(4)
+        self.assertEqual(want, get)
+
+        # (2) Fermat Zahl
+        want = 5
+        get = rsa.fermat_numbers(12)
+        self.assertEqual(want, get)
+
+        # (3) Fermat Zahl
+        want = 17
+        get = rsa.fermat_numbers(45)
+        self.assertEqual(want, get)
+
+    def test_no_fermat_number(self):
+        """"""
+
+        want = -1
+        get = rsa.fermat_numbers(3 * 5 * 17 * 257 * 65537)
+
+        self.assertEqual(want, get)
 
 
 class TestDecrypt(unittest.TestCase):
+    def __init__(self, methodName: str = ...) -> None:
+        super().__init__(methodName=methodName)
+        self.n = examples.n
+        self.e = examples.e
+        self.d = examples.d
+
+        self.rsa = rsa.RSA()
+
     def test_correct_decrypt(self):
-        public = (5, 270396079058430727)
+        """
+        Test ob Zahl m richig verschlüsselt wird.
+        """
 
-        c = 9167575457715517
-        m = 10304003
+        m = 63
+        want = 105
+        get = self.rsa.decrypt(m, self.e, self.n)
 
-        self.assertEqual(rsa.decrypt(m, public[0], public[1]), c)
+        self.assertEqual(want, get)
 
     def test_message_too_long(self):
-        public = (5, 270396079058430727)
+        """
+        Test mit zu langer Naricht.
+        """
+        want = -1
+        get = self.rsa.decrypt(
+            int.from_bytes(random.randbytes(4097), "big"), self.e, self.n
+        )
 
-        m_long = 270396079058430728
-
-        self.assertEqual(rsa.decrypt(m_long, public[0], public[1]), -1)
+        self.assertEqual(want, get)
 
 
 class TestEncrypt(unittest.TestCase):
-    def test_correct_cipher(self):
-        private = (216316862368315661, 270396079058430727)
+    def __init__(self, methodName: str = ...) -> None:
+        super().__init__(methodName=methodName)
+        self.n = examples.n
+        self.e = examples.e
+        self.d = examples.d
 
-        c = 9167575457715517
-        m = 10304003
+        self.rsa = rsa.RSA()
 
-        self.assertEqual(rsa.encrypt(c, private[0], private[1]), m)
+    def test_correct_encrypt(self):
+        """
+        Test ob Zahl c richtig entschlüsselt wird.
+        """
 
-    def test_wrong_cipher(self):
-        private = (216316862368315661, 270396079058430727)
+        c = 105
+        want = 63
+        get = self.rsa.encrypt(c, self.d, self.n)
 
-        c_wrong = 91675754565715517
-        m = 10304003
-
-        self.assertNotEqual(rsa.encrypt(c_wrong, private[0], private[1]), m)
+        self.assertEqual(want, get)
 
 
-class TestGenerateKeys(unittest.TestCase):
-    def test_key_generation(self):
-        rsa.generate_keys(8)
+class TestTextDecryption(unittest.TestCase):
+    def __init__(self, methodName: str = ...) -> None:
+        super().__init__(methodName=methodName)
+        self.n = examples.n_4096
+        self.e = examples.e_4096
+        self.d = examples.d_4096
+
+        self.text = "Works for me!"
+
+        self.rsa = rsa.RSA()
+
+    def test_correct_encrypt(self):
+        """
+        Test ob Text richtig ver- und entschlüsselt wird.
+        """
+
+        c_blocks = self.rsa.decrypt_text(self.text, self.e, self.n)
+        message = self.rsa.encrypt_text(c_blocks, self.d, self.n)
+
+        self.assertEqual(self.text, message.replace("\0", ""))
 
 
 if __name__ == "__main__":

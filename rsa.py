@@ -1,17 +1,26 @@
+#!/usr/bin/env python3
+
 import secrets
-from Crypto.Math.Primality import miller_rabin_test
+from typing import List, Tuple
+import sympy
 
 
 def fermat_numbers(n: int) -> int:
+    """
+    Gibt einer der ersten 5 Fermat Zahlen zurück, die teilerfremd zur Zahl n sind.
+    """
     for i in range(5):
-        fermat_number = 2 ** 2 ** i + 1
-        if euclid(fermat_number, n) == 1:
-            return fermat_number
+        num = 2 ** 2 ** i + 1
+        if euclid(num, n) == 1:
+            return num
 
     return -1
 
 
-def euclid(a, b):
+def euclid(a: int, b: int) -> int:
+    """
+    Berechnung des ggT von zwei Zahlen a und b.
+    """
     # Rekursiv
     if b == 0:
         return a
@@ -20,7 +29,10 @@ def euclid(a, b):
         return euclid(b, r)
 
 
-def extended_euclid(a, b):
+def extended_euclid(a: int, b: int) -> int:
+    """
+    Erweiterter euklidischer Algorithmus für die Vielfachsummendarstellung.
+    """
     # Rekursiv
     if b == 0:
         return a, 1, 0
@@ -30,56 +42,125 @@ def extended_euclid(a, b):
         return ggT, x, y
 
 
-def modular_inverse(a, n):
+def modular_inverse(a: int, n: int) -> int:
+    """
+    Berechnung der modularen Inverse von zwei Zahlen a und n.
+    """
     ggT, x, y = extended_euclid(a, n)
     return x % n
 
 
-def generate_keys(bits: int):
+def get_random_prime(bits: int) -> int:
+    """
+    Generiert eine Primzahl mit festgelegter Bitlänge.
+    """
     while True:
-        # Generate p
+        num = secrets.randbits(bits)
+
+        if num.bit_length() == bits:
+            if sympy.isprime(num):
+                return num
+
+
+class RSA:
+    def __init__(self) -> None:
+        pass
+
+    def generate_keys(self, bits: int) -> Tuple[Tuple[int]]:
+        """
+        Generierung von einem öffentlichen und eines privaten Schlüssels mit einer festgelegten Bitlänge des RSA-Moduls.
+        """
         while True:
-            p = secrets.randbits(bits)
-            if miller_rabin_test(p, 40):
-                break
+            # (1) Generierung von zwei Primzahlen
+            p = get_random_prime(bits // 2)
+            q = get_random_prime(bits // 2)
 
-        # Generate q
-        while True:
-            q = secrets.randbits(bits)
-            if miller_rabin_test(q, 40):
-                break
+            # (2) Berechnung von n
+            n = p * q
 
-        # Generate N
-        n = p * q
+            # (3) Auswahl der Zahl e
+            phi_n = (p - 1) * (q - 1)
+            e = fermat_numbers(phi_n)
 
-        # Generate phi N
-        phi_n = (p - 1) * (q - 1)
+            # Wiederholung des Prozesses, wenn e nicht teilerfremd
+            if e != -1 and n.bit_length() == bits:
 
-        e = fermat_numbers(phi_n)
+                # (4) Berechnung der Zahl d mithilfe der modularen Inverse
+                d = modular_inverse(e, phi_n)
 
-        # If an error occures restart key generation.
-        if e == -1:
-            continue
+                # DEBUG
+                print(n.bit_length(), p.bit_length(), q.bit_length())
 
-        # Generate d
-        d = modular_inverse(e, phi_n)
+                # Geheime Zahlen löschen
+                del q, p, phi_n
 
-        print(n.bit_length())
+                return (e, n), (d, n)
 
-        # Delete secrets
-        del q, p, phi_n
+    def decrypt(self, m: int, e: int, n: int) -> int:
+        """
+        Verschlüsseln einer Naricht m mit den Zahlen e und n.
+        Rückgabe von -1, wenn Naricht zu lang.
+        """
+        if m < n:
+            # c = m^e mod n
+            c = pow(m, e, n)
+            return c
+        else:
+            return -1
 
-        return (e, n), (d, n)
+    def encrypt(self, c: int, d: int, n: int) -> int:
+        """
+        Entschlüsseln eines Geheimtextes c mit den Zahlen d und n.
+        """
+        # m = c^d mod n
+        m = pow(c, d, n)
+        return m
 
+    def decrypt_text(self, m: str, e: int, n: int) -> List[int]:
+        """
+        Verschlüsseln eines Textes in beliebger Größe.
+        """
+        blocks = []
+        bits = n.bit_length()
+        num_chars = bits // 8
 
-def encrypt(c: int, d: int, n: int) -> int:
-    m = pow(c, d, n)  # m = c^d mod n
-    return m
+        for i in range(0, len(m), num_chars):
+            chars = m[i : i + num_chars]
 
+            # (1) Mit 0 auffüllen
+            chars = chars + "\0" * (num_chars - len(m))
 
-def decrypt(m: int, e: int, n: int) -> int:
-    if m < n:
-        c = pow(m, e, n)  # c = m^e mod n
-        return c
-    else:
-        return -1
+            # (2) Zeichen in Binär
+            binary = "".join(format(ord(i), "08b") for i in chars)
+
+            # (3) Binär in Zahl
+            num = int(binary, 2)
+
+            # (4) Verschlüsseln der Zahl
+            c = self.decrypt(num, e, n)
+
+            blocks.append(c)
+
+        return blocks
+
+    def encrypt_text(self, blocks: List[int], d: int, n: int) -> str:
+        """
+        Entschlüsseln eines Textes.
+        """
+        bits = n.bit_length()
+        format_string = f"0{bits}b"
+        message_string = ""
+
+        for c in blocks:
+            # (1) Entschlüsseln
+            m = self.encrypt(c, d, n)
+
+            # (2) Zahl in Binärzahl
+            binary = format(m, format_string)
+
+            # (3) Binärzahl in Zeichen
+            message_string += "".join(
+                chr(int(binary[i : i + 8], 2)) for i in range(0, len(binary), 8)
+            )  # generator
+
+        return message_string
