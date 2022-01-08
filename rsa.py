@@ -96,7 +96,7 @@ class RSA:
 
                 return (e, n), (d, n)
 
-    def decrypt(self, m: int, e: int, n: int) -> int:
+    def encrypt(self, m: int, e: int, n: int) -> int:
         """
         Verschlüsseln einer Naricht m mit den Zahlen e und n.
         Rückgabe von -1, wenn Naricht zu lang.
@@ -108,7 +108,7 @@ class RSA:
         else:
             return -1
 
-    def encrypt(self, c: int, d: int, n: int) -> int:
+    def decrypt(self, c: int, d: int, n: int) -> int:
         """
         Entschlüsseln eines Geheimtextes c mit den Zahlen d und n.
         """
@@ -116,7 +116,7 @@ class RSA:
         m = pow(c, d, n)
         return m
 
-    def decrypt_text(self, m: str, e: int, n: int) -> List[int]:
+    def encrypt_text(self, m: str, e: int, n: int) -> List[int]:
         """
         Verschlüsseln eines Textes in beliebger Größe.
         """
@@ -143,7 +143,7 @@ class RSA:
 
         return blocks
 
-    def encrypt_text(self, blocks: List[int], d: int, n: int) -> str:
+    def decrypt_text(self, blocks: List[int], d: int, n: int) -> str:
         """
         Entschlüsseln eines Textes.
         """

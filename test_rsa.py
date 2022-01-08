@@ -83,38 +83,6 @@ class TestFermatNumbers(unittest.TestCase):
         self.assertEqual(want, get)
 
 
-class TestDecrypt(unittest.TestCase):
-    def __init__(self, methodName: str = ...) -> None:
-        super().__init__(methodName=methodName)
-        self.n = examples.n
-        self.e = examples.e
-        self.d = examples.d
-
-        self.rsa = rsa.RSA()
-
-    def test_correct_decrypt(self):
-        """
-        Test ob Zahl m richig verschlüsselt wird.
-        """
-
-        m = 63
-        want = 105
-        get = self.rsa.decrypt(m, self.e, self.n)
-
-        self.assertEqual(want, get)
-
-    def test_message_too_long(self):
-        """
-        Test mit zu langer Naricht.
-        """
-        want = -1
-        get = self.rsa.decrypt(
-            int.from_bytes(random.randbytes(4097), "big"), self.e, self.n
-        )
-
-        self.assertEqual(want, get)
-
-
 class TestEncrypt(unittest.TestCase):
     def __init__(self, methodName: str = ...) -> None:
         super().__init__(methodName=methodName)
@@ -126,12 +94,44 @@ class TestEncrypt(unittest.TestCase):
 
     def test_correct_encrypt(self):
         """
+        Test ob Zahl m richig verschlüsselt wird.
+        """
+
+        m = 63
+        want = 105
+        get = self.rsa.encrypt(m, self.e, self.n)
+
+        self.assertEqual(want, get)
+
+    def test_message_too_long(self):
+        """
+        Test mit zu langer Naricht.
+        """
+        want = -1
+        get = self.rsa.encrypt(
+            int.from_bytes(random.randbytes(4097), "big"), self.e, self.n
+        )
+
+        self.assertEqual(want, get)
+
+
+class TestDecrypt(unittest.TestCase):
+    def __init__(self, methodName: str = ...) -> None:
+        super().__init__(methodName=methodName)
+        self.n = examples.n
+        self.e = examples.e
+        self.d = examples.d
+
+        self.rsa = rsa.RSA()
+
+    def test_correct_decrypt(self):
+        """
         Test ob Zahl c richtig entschlüsselt wird.
         """
 
         c = 105
         want = 63
-        get = self.rsa.encrypt(c, self.d, self.n)
+        get = self.rsa.decrypt(c, self.d, self.n)
 
         self.assertEqual(want, get)
 
@@ -152,8 +152,8 @@ class TestTextDecryption(unittest.TestCase):
         Test ob Text richtig ver- und entschlüsselt wird.
         """
 
-        c_blocks = self.rsa.decrypt_text(self.text, self.e, self.n)
-        message = self.rsa.encrypt_text(c_blocks, self.d, self.n)
+        c_blocks = self.rsa.encrypt_text(self.text, self.e, self.n)
+        message = self.rsa.decrypt_text(c_blocks, self.d, self.n)
 
         self.assertEqual(self.text, message.replace("\0", ""))
 

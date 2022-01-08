@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-from re import T
 import time
 import platform
 import cpuinfo
@@ -20,31 +19,31 @@ class Benchmark:
 
         self.rsa = RSA()
 
-    def bench_decrypt(self, n: int) -> float:
-        start = time.time()
-        for i in range(n):
-            self.rsa.decrypt(self.m, self.e, self.n)
-
-        return time.time() - start
-
     def bench_encrypt(self, n: int) -> float:
         start = time.time()
         for i in range(n):
-            self.rsa.encrypt(self.c, self.d, self.n)
+            self.rsa.encrypt(self.m, self.e, self.n)
 
         return time.time() - start
 
-    def bench_decrypt_text(self, n: int) -> float:
+    def bench_decrypt(self, n: int) -> float:
         start = time.time()
         for i in range(n):
-            self.text_c = self.rsa.decrypt_text(self.text, self.d, self.n)
+            self.rsa.decrypt(self.c, self.d, self.n)
 
         return time.time() - start
 
     def bench_encrypt_text(self, n: int) -> float:
         start = time.time()
         for i in range(n):
-            self.rsa.encrypt_text(self.text_c, self.d, self.n)
+            self.text_c = self.rsa.encrypt_text(self.text, self.d, self.n)
+
+        return time.time() - start
+
+    def bench_decrypt_text(self, n: int) -> float:
+        start = time.time()
+        for i in range(n):
+            self.rsa.decrypt_text(self.text_c, self.d, self.n)
 
         return time.time() - start
 
@@ -85,14 +84,14 @@ if __name__ == "__main__":
     print(f"Running Benchmark {count} times...")
     bench = Benchmark(examples.n_4096, examples.e_4096, examples.d_4096, m, c, text)
 
-    time_decrypt = bench.bench_decrypt(count)
-    print(f"{time_decrypt}s for decryption.")
+    time_decrypt = bench.bench_encrypt(count)
+    print(f"{time_decrypt}s for encryption.")
 
-    time_encrypt = bench.bench_encrypt(count)
-    print(f"{time_encrypt}s for encryption.")
+    time_encrypt = bench.bench_decrypt(count)
+    print(f"{time_encrypt}s for decryption.")
 
-    time_decrypt_text = bench.bench_decrypt_text(count)
-    print(f"{time_decrypt_text}s for text decryption.")
+    time_decrypt_text = bench.bench_encrypt_text(count)
+    print(f"{time_decrypt_text}s for text encryption.")
 
-    time_encrypt_text = bench.bench_encrypt_text(count)
-    print(f"{time_encrypt_text}s for text encryption.")
+    time_encrypt_text = bench.bench_decrypt_text(count)
+    print(f"{time_encrypt_text}s for text decryption.")
