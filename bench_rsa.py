@@ -49,8 +49,8 @@ class Benchmark:
 
 
 if __name__ == "__main__":
-    m = 89423804729
-    c = 32784692837
+    m = examples.m_4096
+    c = examples.c_4096
 
     text = """Die Kryptographie ist eine Wissenschaft, die sich mit den Methoden beschäftigt, die durch Verschlüsselung und verwandte Verfahren Daten vor unbefugtem Zugriff schützen sollen. Das eine wichtige Hilfsmittel der Kryptographie ist die Matehmatik, denn nur durch mathematische Denkweise und mithilfe von mathematischen Kenntnissen ist es möglich, Verfahren zur sicheren Verschlüsselung zu entwickeln. Das andere wichtige Hilfsmittel ist der Computer. Dieser führt die Verschlüsselungsverfahren aus und leistet wichtige Dienste bei der Untersuchung von kryptografischen Methoden und Schwachstellen."""
 
