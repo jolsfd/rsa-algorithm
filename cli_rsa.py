@@ -48,7 +48,7 @@ def main():
 
     # key files
     parser.add_argument(
-        "--key-file",
+        "--file",
         type=str,
         default=default_file,
         help="Dateispeicherort für Schlüsseldatei",
@@ -86,12 +86,12 @@ def main():
 
         public, private = rsa.generate_keys(args.bits)
 
-        write_key_file(default_file, [public[0], public[1], private[0]])
+        write_key_file(args.file, [public[0], public[1], private[0]])
 
     elif args.command == "encrypt":
         print(f"Encrypting text message...")
 
-        key = read_key_file(default_file)
+        key = read_key_file(args.file)
 
         cipher = rsa.encrypt_text(args.message, int(key[0]), int(key[1]))
 
@@ -102,7 +102,7 @@ def main():
     elif args.command == "decrypt":
         print(f"Decrypting text message...")
 
-        key = read_key_file(default_file)
+        key = read_key_file(args.file)
 
         message = rsa.decrypt_text(args.cipher, int(key[2]), int(key[1]))
 
