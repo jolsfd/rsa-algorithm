@@ -122,7 +122,7 @@ class RSA:
         """
         blocks = []
         bits = n.bit_length()
-        num_chars = bits // 8
+        num_chars = bits // 8 - 1
 
         for i in range(0, len(m), num_chars):
             chars = m[i : i + num_chars]
