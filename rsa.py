@@ -128,7 +128,7 @@ class RSA:
             chars = m[i : i + num_chars]
 
             # (1) Mit 0 auffüllen
-            chars = chars + "\0" * (num_chars - len(m))
+            #chars = chars + "\0" * (num_chars - len(m))
 
             # (2) Zeichen in Binär
             binary = "".join(format(ord(i), "08b") for i in chars)
